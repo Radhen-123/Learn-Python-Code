@@ -149,7 +149,12 @@ class LinkedList:
             Length += 1
             StartNode = StartNode.nextNode
         return Length
-
+     def DeleteAtHead(self):
+        DeleteNode = self.Head
+        self.Head = DeleteNode.nextNode
+        del DeleteNode
+        
+        
 ll = LinkedList()
 ll.InsertAtTail(25)
 ll.InsertAtTail(663)
