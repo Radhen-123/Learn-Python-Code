@@ -142,3 +142,74 @@ def Pholosopher(name, first_stick, second_stick):
 for i in range(0,50):
     threading.Thread(target=Pholosopher, args=(str(i), a_stick, b_stick)).start()  # Dead lock will not occure due to priority a to higest
 # ----------- Live Lock -----------
+
+
+#                  ---------------------------------------- Part 2 ------------------------------------------------
+
+
+
+
+#                  ---------------------------------------- Conditional Lock i.e waiting room and notify ------------------------------------------------
+
+key = threading.Lock()
+amount_of_work = 10;
+worked = threading.Condition(lock=key)
+def WorkRoom(person_id, name):
+    global key, amount_of_work
+    count = 0
+    while amount_of_work > 0:
+        if (person_id == (amount_of_work % 2)):
+            key.acquire()
+            amount_of_work -= 1
+            count += 1
+            print(name, " is working and time left: ", amount_of_work)
+            print(name, "worked time ==================== ", count)
+            worked.notify()
+            worked.wait()
+            key.release()
+        else:
+            print(name, "is waiting for their turn ")
+
+om = threading.Thread(target= WorkRoom, args=(0, "om")).start()
+radhen = threading.Thread(target= WorkRoom, args=(1, "radhen")).start()
+# khant = threading.Thread(target= WorkRoom, args=(2, "khant")).start()
+# jay = threading.Thread(target= WorkRoom, args=(1, "jay")).start()
+# cp = threading.Thread(target= WorkRoom, args=(1, "cp")).start()
+
+
+Production_Line = queue.Queue(maxsize=20)
+def producer():
+    for i in range (20):
+        Production_Line.put_nowait("Product Number: " + str(i))
+        print("Product Number ", str(i), " Remaining capacity: ", str(Production_Line.maxsize - Production_Line.qsize()))
+        time.sleep(0.2)
+    Production_Line.put_nowait("Done")
+    Production_Line.put_nowait("Done")
+
+def consumer():
+    while True:
+        product = Production_Line.get()
+        if product == "Done":
+            break
+        time.sleep(0.3)
+        print("Consumed: " + product)
+for i in range (2):
+    Consumer = threading.Thread(target=consumer).start()
+Producer = threading.Thread(target=producer).start()
+
+#                  ---------------------------------------- Semaphore Lock lock many time same as mutex but can be unlock by different thread ------------------------------------------------
+
+available_plugs = threading.Semaphore(4)
+
+def acquire_plug():
+    name = threading.current_thread().getName()
+    available_plugs.acquire()
+    print(name, " is charging......")
+    time.sleep(random.randint(1, 4))
+    print(name, " Done")
+    available_plugs.release()
+
+for i in range(20):
+    phone = threading.Thread(target=acquire_plug, name="iPhone " + str(i)).start()
+
+
